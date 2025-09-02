@@ -1,0 +1,88 @@
+# 📦 K8s/database/database-deployment.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: database-statefulset
+  namespace: production
+spec:
+  serviceName: database-service
+  replicas: 1 # usually 1 for primary; replicas require streaming replication setup
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          envFrom:
+            - configMapRef:
+                name: database-config
+            - secretRef:
+                name: db-secret
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          ports:
+            - name: postgres
+              containerPort: 5432
+          livenessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready -U postgres -h $POD_IP"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready -U postgres -h $POD_IP"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+      volumes:
+        - name: init-sql
+          configMap:
+            name: database-init-sql
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: hostpath
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-init-sql
+  namespace: production
+data:

@@ -1,0 +1,7 @@
+
+# Environment files
+.env
+frontend/.env
+backend/.env
+K8s/secret.yaml
+
