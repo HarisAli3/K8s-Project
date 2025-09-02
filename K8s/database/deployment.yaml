@@ -63,9 +63,9 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
-            - name: init-sql
-              mountPath: /docker-entrypoint-initdb.d/init.sql
-              subPath: init.sql
+            # - name: init-sql
+            #   mountPath: /docker-entrypoint-initdb.d/init.sql
+            #   subPath: init.sql
       volumes:
         - name: init-sql
           configMap:
@@ -79,10 +79,3 @@ spec:
       resources:
         requests:
           storage: 1Gi
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: database-init-sql
-  namespace: production
-data:
