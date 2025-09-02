@@ -6,7 +6,8 @@ metadata:
 data:
   NODE_ENV: "production"
   PORT: "5000"
-  DB_HOST: "database-service"
+  DB_HOST: "database-statefulset-0.database-service.production.svc.cluster.local"
+#  DB_HOST: "database-service"
   DB_PORT: "5432"
   DB_NAME: "student_management"
   CORS_ORIGIN: "*"
