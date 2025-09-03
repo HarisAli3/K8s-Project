@@ -31,7 +31,7 @@ spec:
               name: db-secret
         ports:
         - containerPort: 5000
-        startupProbe:
+        startupProbe: # While this probe is running, liveness and readiness are disabled
           httpGet:
             path: /health
             port: 5000
@@ -39,7 +39,7 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 30
-        readinessProbe:
+        readinessProbe: # Mark as pod ready for Service connections. Readiness never restarts your container.
           httpGet:
             path: /health
             port: 5000
@@ -48,12 +48,12 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 3
           successThreshold: 1
-        livenessProbe:
+        livenessProbe: # It restarts the container
           httpGet:
             path: /health
             port: 5000
           initialDelaySeconds: 20
-          periodSeconds: 20
+          periodSeconds: 10
           timeoutSeconds: 3
         resources:
           requests:

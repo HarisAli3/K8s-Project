@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-backup
+  namespace: production
+  labels:
+    app: db-backup
+spec:
+  # Run every day at 12:00 AM
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: postgres-backup
+              image: postgres:15-alpine
+              env:
+                - name: PGHOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: backend-config
+                      key: DB_HOST
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-secret
+                      key: POSTGRES_USER
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-secret
+                      key: POSTGRES_PASSWORD
+                - name: PGDATABASE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: database-config
+                      key: POSTGRES_DB
+              command:
+                - /bin/sh
+                - -c
+                - >
+                  pg_dump -h $PGHOST -U $PGUSER -d $PGDATABASE
+                  > /backup/backup-$(date +\%F-\%H-%M-%S).sql
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: db-backup-pvc
