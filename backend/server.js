@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const studentRoutes = require('./routes/students');
 const errorHandler = require('./middleware/errorHandler');
+const { pool } = require('./database/connection');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -66,14 +67,49 @@ app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+// Health check endpoint with database connectivity check
+app.get('/health', async (req, res) => {
+  try {
+    // Test database connection
+    const client = await pool.connect();
+    await client.query('SELECT 1');
+    client.release();
+    
+    // Check pool status
+    const poolStatus = {
+      totalCount: pool.totalCount,
+      idleCount: pool.idleCount,
+      waitingCount: pool.waitingCount
+    };
+    
+    res.json({
+      success: true,
+      message: 'Server is running and database is connected',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: 'connected',
+      poolStatus: poolStatus
+    });
+  } catch (error) {
+    console.error('Health check failed - Database connection error:', error.message);
+    
+    // Check if it's a connection error vs other database errors
+    const isConnectionError = error.code === 'ECONNREFUSED' || 
+                             error.code === 'ENOTFOUND' || 
+                             error.message.includes('connection') ||
+                             error.message.includes('timeout');
+    
+    res.status(503).json({
+      success: false,
+      message: isConnectionError ? 'Server is running but database is not accessible' : 'Server is running but database has errors',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: 'disconnected',
+      error: error.message,
+      errorCode: error.code,
+      isConnectionError: isConnectionError
+    });
+  }
 });
 
 // API root - helpful for ingress path `/api`
@@ -86,13 +122,48 @@ app.get('/api', (req, res) => {
 });
 
 // API health under `/api` prefix (useful when exposed via ingress `/api`)
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Test database connection
+    const client = await pool.connect();
+    await client.query('SELECT 1');
+    client.release();
+    
+    // Check pool status
+    const poolStatus = {
+      totalCount: pool.totalCount,
+      idleCount: pool.idleCount,
+      waitingCount: pool.waitingCount
+    };
+    
+    res.json({
+      success: true,
+      message: 'Server is running and database is connected',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: 'connected',
+      poolStatus: poolStatus
+    });
+  } catch (error) {
+    console.error('API health check failed - Database connection error:', error.message);
+    
+    // Check if it's a connection error vs other database errors
+    const isConnectionError = error.code === 'ECONNREFUSED' || 
+                             error.code === 'ENOTFOUND' || 
+                             error.message.includes('connection') ||
+                             error.message.includes('timeout');
+    
+    res.status(503).json({
+      success: false,
+      message: isConnectionError ? 'Server is running but database is not accessible' : 'Server is running but database has errors',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: 'disconnected',
+      error: error.message,
+      errorCode: error.code,
+      isConnectionError: isConnectionError
+    });
+  }
 });
 
 // API routes

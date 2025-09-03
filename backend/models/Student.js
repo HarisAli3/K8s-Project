@@ -1,4 +1,4 @@
-const pool = require('../database/connection');
+const { pool } = require('../database/connection');
 
 class Student {
   static async getAll() {

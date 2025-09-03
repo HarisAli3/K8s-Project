@@ -12,6 +12,9 @@ const getDbConfig = () => {
     max: parseInt(process.env.DB_MAX_CONNECTIONS) || 20,
     idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT) || 30000,
     connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT) || 2000,
+    // Add retry configuration for better resilience
+    retryDelay: parseInt(process.env.DB_RETRY_DELAY) || 1000,
+    maxRetries: parseInt(process.env.DB_MAX_RETRIES) || 3,
   };
 };
 
@@ -34,7 +37,21 @@ pool.on('connect', () => {
 
 pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+  // Don't exit the process immediately, let the health check handle it
+  // process.exit(-1);
 });
 
-module.exports = pool;
+// Add a method to test database connectivity
+const testConnection = async () => {
+  try {
+    const client = await pool.connect();
+    await client.query('SELECT 1');
+    client.release();
+    return true;
+  } catch (error) {
+    console.error('Database connection test failed:', error.message);
+    return false;
+  }
+};
+
+module.exports = { pool, testConnection };
