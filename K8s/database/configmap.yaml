@@ -5,3 +5,4 @@ metadata:
   namespace: production
 data:
   POSTGRES_DB: "student_management"
+  BACKUP_HOST: "database-statefulset-1.database-service.production.svc.cluster.local"

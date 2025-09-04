@@ -19,8 +19,8 @@ spec:
                 - name: PGHOST
                   valueFrom:
                     configMapKeyRef:
-                      name: backend-config
-                      key: DB_HOST
+                      name: database-config
+                      key: BACKUP_HOST
                 - name: PGUSER
                   valueFrom:
                     secretKeyRef:
