@@ -49,4 +49,4 @@ spec:
           volumes:
             - name: backup-storage
               persistentVolumeClaim:
-                claimName: db-backup-pvc
+                claimName: do-block-storage
