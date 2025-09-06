@@ -15,9 +15,9 @@ spec:
           cpu: "100m"
           memory: "128Mi"
       volumeMounts:
-        - name: backup-storage
+        - name: db-backup-pvc
           mountPath: /backup
   volumes:
-    - name: backup-storage
+    - name: db-backup-pvc
       persistentVolumeClaim:
         claimName: db-backup-pvc

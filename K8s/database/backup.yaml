@@ -11,6 +11,9 @@ spec:
   jobTemplate:
     spec:
       template:
+        metadata:
+          labels:
+            app: db-backup
         spec:
           containers:
             - name: postgres-backup
@@ -41,12 +44,12 @@ spec:
                 - -c
                 - >
                   pg_dump -h $PGHOST -U $PGUSER -d $PGDATABASE
-                  > /backup/backup-$(date +\%F-\%H-%M-%S).sql
+                  > /backup/backup-$(date +\%F-\%H-%M).sql
               volumeMounts:
-                - name: backup-storage
+                - name: db-backup-pvc
                   mountPath: /backup
           restartPolicy: OnFailure
-          volumes:
-            - name: backup-storage
+          volumes: 
+            - name: db-backup-pvc
               persistentVolumeClaim:
-                claimName: do-block-storage
+                claimName: db-backup-pvc

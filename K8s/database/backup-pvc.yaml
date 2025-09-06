@@ -9,4 +9,4 @@ spec:
   resources:
     requests:
       storage: 1Gi   # increase if you expect large dumps
-  storageClassName: do-block-storage   # same as your DB PVC
+  storageClassName: do-block-storage-retain   # same as your DB PVC
