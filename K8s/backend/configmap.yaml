@@ -12,3 +12,9 @@ data:
   DB_NAME: "student_management"
   CORS_ORIGIN: "*"
   POSTGRES_DB: "student_management"
+  # Database connection optimization
+  DB_MAX_CONNECTIONS: "10"
+  DB_IDLE_TIMEOUT: "30000"
+  DB_CONNECTION_TIMEOUT: "5000"
+  DB_RETRY_DELAY: "1000"
+  DB_MAX_RETRIES: "3"
