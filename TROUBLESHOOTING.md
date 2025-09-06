@@ -70,8 +70,10 @@ kubectl describe ingress myapp-ingress -n production
 # Port forward to backend service
 kubectl port-forward svc/backend-service 5000:5000 -n production
 
-# Test health endpoint
+# Test health endpoints
 curl http://localhost:5000/health
+curl http://localhost:5000/ready
+curl http://localhost:5000/live
 ```
 
 ### Step 5: Check Frontend Logs

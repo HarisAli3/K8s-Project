@@ -18,18 +18,18 @@ const testDatabaseConnection = async () => {
   }
 };
 
-// HTTP health check
+// HTTP health check - test readiness endpoint
 const testHttpHealth = () => {
   return new Promise((resolve) => {
     const options = {
       host: 'localhost',
       port: process.env.PORT || 5000,
-      path: '/health',
+      path: '/ready',
       timeout: 5000
     };
 
     const request = http.request(options, (res) => {
-      console.log(`HTTP health check status: ${res.statusCode}`);
+      console.log(`HTTP readiness check status: ${res.statusCode}`);
       if (res.statusCode === 200) {
         resolve(true);
       } else {
@@ -38,12 +38,12 @@ const testHttpHealth = () => {
     });
 
     request.on('error', (err) => {
-      console.log('HTTP health check failed:', err.message);
+      console.log('HTTP readiness check failed:', err.message);
       resolve(false);
     });
 
     request.on('timeout', () => {
-      console.log('HTTP health check timeout');
+      console.log('HTTP readiness check timeout');
       request.destroy();
       resolve(false);
     });

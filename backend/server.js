@@ -27,7 +27,8 @@ const limiter = rateLimit({
   legacyHeaders: false,
   skip: (req) => {
     // Skip rate limiting for health check endpoints
-    return req.path === '/health' || req.path === '/api/health';
+    return req.path === '/health' || req.path === '/api/health' || 
+           req.path === '/ready' || req.path === '/live';
   }
 });
 app.use(limiter);
@@ -70,6 +71,65 @@ app.options('*', cors(corsOptions));
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Readiness probe endpoint - checks if the service is ready to accept traffic
+// This includes database connectivity and other dependencies
+app.get('/ready', async (req, res) => {
+  try {
+    // Test database connection
+    const client = await pool.connect();
+    await client.query('SELECT 1');
+    client.release();
+    
+    // Check pool status
+    const poolStatus = {
+      totalCount: pool.totalCount,
+      idleCount: pool.idleCount,
+      waitingCount: pool.waitingCount
+    };
+    
+    res.json({
+      success: true,
+      message: 'Service is ready to accept traffic',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: 'connected',
+      poolStatus: poolStatus
+    });
+  } catch (error) {
+    console.error('Readiness probe failed - Database connection error:', error.message);
+    
+    // Check if it's a connection error vs other database errors
+    const isConnectionError = error.code === 'ECONNREFUSED' || 
+                             error.code === 'ENOTFOUND' || 
+                             error.message.includes('connection') ||
+                             error.message.includes('timeout');
+    
+    res.status(503).json({
+      success: false,
+      message: isConnectionError ? 'Service not ready - database not accessible' : 'Service not ready - database has errors',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: 'disconnected',
+      error: error.message,
+      errorCode: error.code,
+      isConnectionError: isConnectionError
+    });
+  }
+});
+
+// Liveness probe endpoint - checks if the service is alive (basic health check)
+// This should be lightweight and not depend on external services
+app.get('/live', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Service is alive',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  });
+});
 
 // Health check endpoint with database connectivity check
 app.get('/health', async (req, res) => {
@@ -121,7 +181,8 @@ app.get('/api', (req, res) => {
   res.json({
     success: true,
     message: 'API root',
-    endpoints: ['/api/students', '/api/health']
+    endpoints: ['/api/students', '/api/health'],
+    healthEndpoints: ['/health', '/ready', '/live']
   });
 });
 
@@ -189,6 +250,8 @@ app.listen(PORT, HOST, () => {
   console.log(`🚀 Server running on ${HOST}:${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://${HOST}:${PORT}/health`);
+  console.log(`✅ Readiness probe: http://${HOST}:${PORT}/ready`);
+  console.log(`💓 Liveness probe: http://${HOST}:${PORT}/live`);
   console.log(`🌐 Accessible from: http://0.0.0.0:${PORT}`);
 });
 

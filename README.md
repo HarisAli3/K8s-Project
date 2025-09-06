@@ -166,7 +166,10 @@ The `students` table includes:
 | POST | `/api/students` | Create new student |
 | PUT | `/api/students/:id` | Update student |
 | DELETE | `/api/students/:id` | Delete student |
-| GET | `/health` | Health check |
+| GET | `/health` | General health check |
+| GET | `/ready` | Readiness probe (K8s) |
+| GET | `/live` | Liveness probe (K8s) |
+| GET | `/api/health` | API health check |
 
 ## 🧪 Testing
 
@@ -195,7 +198,9 @@ npm test
 
 ### Health Checks
 
-- **Backend**: `GET /health`
+- **Backend Readiness**: `GET /ready` (checks database connectivity)
+- **Backend Liveness**: `GET /live` (basic server health)
+- **Backend General**: `GET /health` (comprehensive health check)
 - **Frontend**: `GET /health`
 - **Database**: PostgreSQL health check
 

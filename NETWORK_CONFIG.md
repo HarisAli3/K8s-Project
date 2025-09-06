@@ -151,10 +151,14 @@ tcp6       0      0 :::3000                 :::*                    LISTEN
 ```bash
 # From another machine on the network
 curl http://YOUR_IP:5000/health
+curl http://YOUR_IP:5000/ready
+curl http://YOUR_IP:5000/live
 curl http://YOUR_IP:3000
 
 # From Docker host
 curl http://0.0.0.0:5000/health
+curl http://0.0.0.0:5000/ready
+curl http://0.0.0.0:5000/live
 curl http://0.0.0.0:3000
 ```
 
@@ -202,6 +206,8 @@ docker-compose exec frontend env | grep REACT_APP
 # Test network connectivity
 docker-compose exec backend curl http://frontend:80
 docker-compose exec frontend curl http://backend:5000/health
+docker-compose exec frontend curl http://backend:5000/ready
+docker-compose exec frontend curl http://backend:5000/live
 ```
 
 ## 📋 **Quick Reference**
@@ -230,6 +236,8 @@ docker-compose exec backend netstat -tlnp | grep :5000
 
 # Test external access
 curl http://YOUR_IP:5000/health
+curl http://YOUR_IP:5000/ready
+curl http://YOUR_IP:5000/live
 ```
 
 ### **Kubernetes Commands**

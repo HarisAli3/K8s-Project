@@ -1,17 +1,32 @@
 # Backend Health Check System
 
 ## Overview
-The backend now includes enhanced health checks that verify both HTTP endpoint availability and database connectivity. This ensures that the backend only reports as healthy when it can successfully connect to the database.
+The backend now includes enhanced health checks with separate endpoints for different types of health monitoring. This follows Kubernetes best practices by separating readiness and liveness concerns.
 
 ## Health Check Endpoints
 
-### 1. `/health`
-- **Purpose**: Main health check endpoint for Kubernetes probes
+### 1. `/ready` - Readiness Probe
+- **Purpose**: Checks if the service is ready to accept traffic
+- **Checks**: Database connectivity and connection pool status
+- **Response**: 
+  - `200 OK`: Service is ready to accept traffic
+  - `503 Service Unavailable`: Service not ready (database issues)
+
+### 2. `/live` - Liveness Probe
+- **Purpose**: Checks if the service is alive and running
+- **Checks**: Basic server health (lightweight, no external dependencies)
+- **Response**: 
+  - `200 OK`: Service is alive
+  - Always returns 200 unless server is completely down
+
+### 3. `/health` - General Health Check
+- **Purpose**: Comprehensive health check endpoint
+- **Checks**: Database connectivity and connection pool status
 - **Response**: 
   - `200 OK`: Server is running and database is connected
   - `503 Service Unavailable`: Server is running but database is not accessible
 
-### 2. `/api/health`
+### 4. `/api/health` - API Health Check
 - **Purpose**: API-specific health check endpoint
 - **Response**: Same as `/health` endpoint
 
@@ -50,24 +65,24 @@ The backend now includes enhanced health checks that verify both HTTP endpoint a
 ## Kubernetes Configuration
 
 ### Startup Probe
-- **Path**: `/health`
-- **Initial Delay**: 5 seconds
-- **Period**: 10 seconds
+- **Path**: `/ready`
+- **Initial Delay**: 20 seconds
+- **Period**: 20 seconds
 - **Timeout**: 5 seconds
-- **Failure Threshold**: 30 (5 minutes total)
+- **Failure Threshold**: 30 (10 minutes total)
 
 ### Readiness Probe
-- **Path**: `/health`
-- **Initial Delay**: 10 seconds
-- **Period**: 15 seconds
+- **Path**: `/ready`
+- **Initial Delay**: 40 seconds
+- **Period**: 20 seconds
 - **Timeout**: 5 seconds
 - **Failure Threshold**: 3
 - **Success Threshold**: 1
 
 ### Liveness Probe
-- **Path**: `/health`
+- **Path**: `/live`
 - **Initial Delay**: 20 seconds
-- **Period**: 20 seconds
+- **Period**: 10 seconds
 - **Timeout**: 3 seconds
 
 ## Docker Health Check

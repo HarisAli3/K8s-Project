@@ -33,7 +33,7 @@ spec:
         - containerPort: 5000
         startupProbe: # While this probe is running, liveness and readiness are disabled
           httpGet:
-            path: /health
+            path: /ready
             port: 5000
           initialDelaySeconds: 20
           periodSeconds: 20
@@ -41,7 +41,7 @@ spec:
           failureThreshold: 30
         readinessProbe: # Mark as pod ready for Service connections. Readiness never restarts your container.
           httpGet:
-            path: /health
+            path: /ready
             port: 5000
           initialDelaySeconds: 40
           periodSeconds: 20
@@ -50,7 +50,7 @@ spec:
           successThreshold: 1
         livenessProbe: # It restarts the container
           httpGet:
-            path: /health
+            path: /live
             port: 5000
           initialDelaySeconds: 20
           periodSeconds: 10
