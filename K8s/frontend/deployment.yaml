@@ -17,8 +17,11 @@ spec:
       labels:
         app: frontend
     spec:
+      serviceAccountName: frontend-sa
+      imagePullSecrets:
+        - name: docker-cfg
       containers:
-      - image: registry.digitalocean.com/student-app/frontend:latest
+      - image: registry.digitalocean.com/student-app-registry/frontend:latest
         name: frontend
         imagePullPolicy: Always
         ports:

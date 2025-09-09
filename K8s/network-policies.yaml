@@ -51,7 +51,7 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              app.kubernetes.io/name: ingress-nginx
+              name: ingress-nginx
       ports:
         - protocol: TCP
           port: 8080
@@ -74,7 +74,7 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              app.kubernetes.io/name: ingress-nginx
+              name: ingress-nginx
       ports:
         - protocol: TCP
           port: 5000

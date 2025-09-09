@@ -1,0 +1,51 @@
+# ClusterRoleBinding for system monitoring
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system-monitor-binding
+  labels:
+    component: rbac
+    tier: monitoring
+subjects:
+- kind: ServiceAccount
+  name: monitoring-sa
+  namespace: production
+roleRef:
+  kind: ClusterRole
+  name: system-monitor
+  apiGroup: rbac.authorization.k8s.io
+---
+# ClusterRoleBinding for backup operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backup-manager-binding
+  labels:
+    component: rbac
+    tier: backup
+subjects:
+- kind: ServiceAccount
+  name: database-sa
+  namespace: production
+roleRef:
+  kind: ClusterRole
+  name: backup-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+# ClusterRoleBinding for network policy management (if needed)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: network-policy-manager-binding
+  labels:
+    component: rbac
+    tier: networking
+subjects:
+- kind: ServiceAccount
+  name: monitoring-sa
+  namespace: production
+roleRef:
+  kind: ClusterRole
+  name: network-policy-manager
+  apiGroup: rbac.authorization.k8s.io
+

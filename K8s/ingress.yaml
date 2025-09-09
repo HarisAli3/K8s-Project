@@ -13,10 +13,15 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - k8s.harisali.com
+      secretName: cloudflare-cert
   rules:
-    - host: 209.38.58.2.nip.io   # 
+    - host: k8s.harisali.com   # 
       http:
         paths:
           - path: /

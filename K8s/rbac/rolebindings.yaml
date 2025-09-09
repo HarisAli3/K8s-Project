@@ -1,0 +1,72 @@
+# Backend RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: backend-rolebinding
+  namespace: production
+  labels:
+    app: backend
+    component: rbac
+subjects:
+- kind: ServiceAccount
+  name: backend-sa
+  namespace: production
+roleRef:
+  kind: Role
+  name: backend-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Frontend RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: frontend-rolebinding
+  namespace: production
+  labels:
+    app: frontend
+    component: rbac
+subjects:
+- kind: ServiceAccount
+  name: frontend-sa
+  namespace: production
+roleRef:
+  kind: Role
+  name: frontend-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Database RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: database-rolebinding
+  namespace: production
+  labels:
+    app: database
+    component: rbac
+subjects:
+- kind: ServiceAccount
+  name: database-sa
+  namespace: production
+roleRef:
+  kind: Role
+  name: database-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Monitoring RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: monitoring-rolebinding
+  namespace: production
+  labels:
+    app: monitoring
+    component: rbac
+subjects:
+- kind: ServiceAccount
+  name: monitoring-sa
+  namespace: production
+roleRef:
+  kind: Role
+  name: monitoring-role
+  apiGroup: rbac.authorization.k8s.io
+
